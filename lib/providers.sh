@@ -16,6 +16,26 @@ RED='\033[0;31m'
 NC='\033[0m'
 
 # ============================================================================
+# Helpers
+# ============================================================================
+#
+# Small helper to verify a CLI binary is available and print a standardized
+# error message. This reduces duplication across provider checks.
+#
+require_command() {
+  local cmd="$1"
+  local msg="$2"
+
+  if ! command -v "$cmd" &> /dev/null; then
+    echo -e "${RED}❌ $msg${NC}"
+    echo ""
+    return 1
+  fi
+
+  return 0
+}
+
+# ============================================================================
 # Provider Validation
 # ============================================================================
 
@@ -58,6 +78,18 @@ validate_provider() {
         return 1
       fi
       ;;
+
+    opencode)
+      if ! command -v opencode &> /dev/null; then
+        echo -e "${RED}❌ Opencode CLI not found${NC}"
+        echo ""
+        echo "Install Opencode CLI:"
+        echo "  https://opencode.ai/cli"
+        echo ""
+        return 1
+      fi
+      ;;
+
     ollama)
       if ! command -v ollama &> /dev/null; then
         echo -e "${RED}❌ Ollama not found${NC}"
@@ -97,6 +129,7 @@ validate_provider() {
       echo "  - claude"
       echo "  - gemini"
       echo "  - codex"
+      echo "  - opencode"
       echo "  - ollama:<model>"
       echo "  - copilot"
       echo ""
@@ -125,6 +158,9 @@ execute_provider() {
       ;;
     codex)
       execute_codex "$prompt"
+      ;;
+    opencode)
+      execute_opencode "$prompt"
       ;;
     ollama)
       local model="${provider#*:}"
@@ -167,6 +203,14 @@ execute_codex() {
   # Using --output-last-message to get just the final response
   codex exec "$prompt" 2>&1
   return $?
+}
+
+execute_opencode() {
+  local prompt="$1"
+
+  # Opencode CLI: send prompt via stdin (consistent with other CLIs)
+  echo "$prompt" | opencode 2>&1
+  return "${PIPESTATUS[1]}"
 }
 
 execute_ollama() {
@@ -241,6 +285,9 @@ get_provider_info() {
       ;;
     codex)
       echo "OpenAI Codex CLI"
+      ;;
+    opencode)
+      echo "Opencode AI CLI"
       ;;
     ollama)
       local model="${provider#*:}"

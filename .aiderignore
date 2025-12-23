@@ -1,0 +1,25 @@
+# Auto-generated .aiderignore
+# This file excludes large files and build artifacts from Aider context
+
+*.lock
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bun.lockb
+*.log
+*.min.js
+*.min.css
+dist/
+build/
+.next/
+node_modules/
+.git/
+*.map
+*.bundle.js
+coverage/
+.nyc_output/
+node_modules/
+dist/
+build/
+.next/
+.git/

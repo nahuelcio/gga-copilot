@@ -7,6 +7,7 @@
 # - claude: Anthropic Claude Code CLI
 # - gemini: Google Gemini CLI
 # - codex: OpenAI Codex CLI
+# - opencode: Opencode CLI
 # - ollama:<model>: Ollama with specified model
 # - copilot[:<model>]: GitHub Copilot via copilot-api proxy (default model: gpt-4o)
 # ============================================================================
@@ -58,6 +59,16 @@ validate_provider() {
         return 1
       fi
       ;;
+    opencode)
+      if ! command -v opencode &> /dev/null; then
+        echo -e "${RED}❌ Opencode CLI not found${NC}"
+        echo ""
+        echo "Install Opencode CLI (follow your project's installation instructions):"
+        echo "  https://opencode.example.com"
+        echo ""
+        return 1
+      fi
+      ;;
     ollama)
       if ! command -v ollama &> /dev/null; then
         echo -e "${RED}❌ Ollama not found${NC}"
@@ -97,6 +108,7 @@ validate_provider() {
       echo "  - claude"
       echo "  - gemini"
       echo "  - codex"
+      echo "  - opencode"
       echo "  - ollama:<model>"
       echo "  - copilot"
       echo ""
@@ -125,6 +137,9 @@ execute_provider() {
       ;;
     codex)
       execute_codex "$prompt"
+      ;;
+    opencode)
+      execute_opencode "$prompt"
       ;;
     ollama)
       local model="${provider#*:}"
@@ -167,6 +182,16 @@ execute_codex() {
   # Using --output-last-message to get just the final response
   codex exec "$prompt" 2>&1
   return $?
+}
+
+# Opencode provider: accept prompt via stdin and forward to `opencode` CLI.
+# Return the opencode CLI exit status (if using a pipe, propagate the child status).
+execute_opencode() {
+  local prompt="$1"
+
+  # Many CLIs that accept stdin will set their own exit code; capture it reliably.
+  echo "$prompt" | opencode 2>&1
+  return "${PIPESTATUS[1]}"
 }
 
 execute_ollama() {
@@ -241,6 +266,9 @@ get_provider_info() {
       ;;
     codex)
       echo "OpenAI Codex CLI"
+      ;;
+    opencode)
+      echo "Opencode CLI"
       ;;
     ollama)
       local model="${provider#*:}"

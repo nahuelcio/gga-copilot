@@ -8,6 +8,7 @@
 # - gemini: Google Gemini CLI
 # - codex: OpenAI Codex CLI
 # - ollama:<model>: Ollama with specified model
+# - opencode: Opencode CLI
 # - copilot[:<model>]: GitHub Copilot via copilot-api proxy (default model: gpt-4o)
 # ============================================================================
 
@@ -81,6 +82,15 @@ validate_provider() {
         return 1
       fi
       ;;
+    opencode)
+      if ! command -v opencode &> /dev/null; then
+        echo -e "${RED}❌ Opencode CLI not found${NC}"
+        echo ""
+        echo "Install Opencode CLI or ensure 'opencode' is available in PATH."
+        echo ""
+        return 1
+      fi
+      ;;
     copilot)
       if ! command -v curl &> /dev/null; then
         echo -e "${RED}❌ curl not found${NC}"
@@ -98,6 +108,7 @@ validate_provider() {
       echo "  - gemini"
       echo "  - codex"
       echo "  - ollama:<model>"
+      echo "  - opencode"
       echo "  - copilot"
       echo ""
       return 1
@@ -125,6 +136,9 @@ execute_provider() {
       ;;
     codex)
       execute_codex "$prompt"
+      ;;
+    opencode)
+      execute_opencode "$prompt"
       ;;
     ollama)
       local model="${provider#*:}"
@@ -167,6 +181,20 @@ execute_codex() {
   # Using --output-last-message to get just the final response
   codex exec "$prompt" 2>&1
   return $?
+}
+
+execute_opencode() {
+  local prompt="$1"
+
+  # Opencode CLI - assume it accepts prompt via stdin (consistent with other CLIs)
+  # If the CLI has a different interface, this is the place to adapt.
+  if ! command -v opencode &> /dev/null; then
+    echo "Error: opencode CLI not found" >&2
+    return 1
+  fi
+
+  echo "$prompt" | opencode 2>&1
+  return "${PIPESTATUS[1]}"
 }
 
 execute_ollama() {
@@ -245,6 +273,9 @@ get_provider_info() {
     ollama)
       local model="${provider#*:}"
       echo "Ollama (model: $model)"
+      ;;
+    opencode)
+      echo "Opencode CLI"
       ;;
     copilot)
       local model="${provider#*:}"

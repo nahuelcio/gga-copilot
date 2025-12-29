@@ -1,0 +1,14 @@
+I reviewed the files you added (bin/gga, bin/gga-copilot, lib/providers.sh, spec/unit/providers_spec.sh).
+
+Quick summary of what I found:
+- lib/providers.sh already contains cases for "opencode" in validate_provider, execute_provider, execute_opencode, and get_provider_info.
+- bin/gga and the init/docs strings already list "opencode" as a supported provider.
+=> At a glance, the provider appears to be implemented.
+
+I need a bit of clarification to produce a precise fix:
+1. What observable bug or failing test are you seeing? Please paste the failing test output or describe the incorrect behavior.
+2. Which acceptance criterion is not being met (e.g., tests failing, CLI help missing, provider not invoked, wrong get_provider_info text, runtime error when using opencode)?
+3. If tests fail, which spec(s) fail and what's the asserted vs actual output?
+4. Do you want any changes beyond enabling the provider (for example: better error/help text, docs, or more robust JSON handling)?
+
+Once you send the failing output or confirm the exact issue, I'll propose the minimal SEARCH/REPLACE edits to fix it and update tests if needed.

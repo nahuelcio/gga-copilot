@@ -35,7 +35,7 @@
 
 You have coding standards. Your team ignores them. Code reviews catch issues too late.
 
-**Gentleman Guardian Angel** runs on every commit, validating your staged files against your project's `AGENTS.md` (or any rules file). It's like having a senior developer review every line before it hits the repo.
+**Gentleman Guardian Angel** runs on every commit, validating your staged files against your project's `REVIEW.md` (or any rules file). It's like having a senior developer review every line before it hits the repo.
 
 ```
 ┌─────────────────┐     ┌──────────────┐     ┌─────────────────┐
@@ -97,7 +97,7 @@ cd ~/your-project
 gga init
 
 # 3. Create your rules file
-touch AGENTS.md  # Add your coding standards
+touch REVIEW.md  # Add your coding standards
 
 # 4. Install the git hook
 gga install
@@ -127,7 +127,7 @@ $ gga init
 
 ℹ️  Next steps:
   1. Edit .gga to set your preferred provider
-  2. Create AGENTS.md with your coding standards
+  2. Create REVIEW.md with your coding standards
   3. Run: gga install
 ```
 
@@ -146,7 +146,7 @@ FILE_PATTERNS="*.ts,*.tsx,*.js,*.jsx"
 EXCLUDE_PATTERNS="*.test.ts,*.spec.ts,*.test.tsx,*.spec.tsx,*.d.ts"
 
 # File containing code review rules
-RULES_FILE="AGENTS.md"
+RULES_FILE="REVIEW.md"
 
 # Strict mode: fail if AI response is ambiguous
 STRICT_MODE="true"
@@ -155,7 +155,7 @@ STRICT_MODE="true"
 ### Step 3: Create your coding standards
 
 ```bash
-$ cat > AGENTS.md << 'EOF'
+$ cat > REVIEW.md << 'EOF'
 # Code Review Rules
 
 ## TypeScript
@@ -200,7 +200,7 @@ $ git commit -m "feat: add new button component"
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ℹ️  Provider: claude
-ℹ️  Rules file: AGENTS.md
+ℹ️  Rules file: REVIEW.md
 ℹ️  File patterns: *.ts,*.tsx,*.js,*.jsx
 ℹ️  Cache: enabled
 
@@ -250,7 +250,7 @@ Files to review:
 
 STATUS: PASSED
 
-All files comply with the coding standards defined in AGENTS.md.
+All files comply with the coding standards defined in REVIEW.md.
 
 ✅ CODE REVIEW PASSED
 
@@ -338,7 +338,7 @@ Values:
   PROVIDER:          claude
   FILE_PATTERNS:     *.ts,*.tsx,*.js,*.jsx
   EXCLUDE_PATTERNS:  *.test.ts,*.spec.ts
-  RULES_FILE:        AGENTS.md
+  RULES_FILE:        REVIEW.md
   STRICT_MODE:       true
 
 Rules File: Found
@@ -356,7 +356,7 @@ GGA includes intelligent caching to speed up reviews by skipping files that have
 ┌─────────────────────────────────────────────────────────────────┐
 │                        Cache Logic                               │
 ├─────────────────────────────────────────────────────────────────┤
-│  1. Hash AGENTS.md + .gga config                                │
+│  1. Hash REVIEW.md + .gga config                                │
 │     └─► If changed → Invalidate ALL cache                       │
 │                                                                  │
 │  2. For each staged file:                                        │
@@ -376,7 +376,7 @@ The cache automatically invalidates when:
 | Change | Effect |
 |--------|--------|
 | File content changes | Only that file is re-reviewed |
-| `AGENTS.md` changes | **All files** are re-reviewed |
+| `REVIEW.md` changes | **All files** are re-reviewed |
 | `.gga` config changes | **All files** are re-reviewed |
 
 ### Cache Commands
@@ -413,7 +413,7 @@ gga run --no-cache
 ```
 ~/.cache/gga/
 ├── <project-hash-1>/
-│   ├── metadata          # Hash of AGENTS.md + .gga
+│   ├── metadata          # Hash of REVIEW.md + .gga
 │   └── files/
 │       ├── <file-hash-a> # "PASSED"
 │       └── <file-hash-b> # "PASSED"
@@ -481,8 +481,8 @@ FILE_PATTERNS="*.ts,*.tsx,*.js,*.jsx"
 EXCLUDE_PATTERNS="*.test.ts,*.spec.ts,*.d.ts"
 
 # File containing your coding standards
-# Default: AGENTS.md
-RULES_FILE="AGENTS.md"
+# Default: REVIEW.md
+RULES_FILE="REVIEW.md"
 
 # Fail if AI response is ambiguous (recommended for CI)
 # Default: true
@@ -496,7 +496,7 @@ STRICT_MODE="true"
 | `PROVIDER` | ✅ Yes | - | AI provider to use |
 | `FILE_PATTERNS` | No | `*` | Comma-separated file patterns to include |
 | `EXCLUDE_PATTERNS` | No | - | Comma-separated file patterns to exclude |
-| `RULES_FILE` | No | `AGENTS.md` | Path to your coding standards file |
+| `RULES_FILE` | No | `REVIEW.md` | Path to your coding standards file |
 | `STRICT_MODE` | No | `true` | Fail on ambiguous AI responses |
 
 ### Config Hierarchy (Priority Order)
@@ -515,9 +515,9 @@ export GGA_PROVIDER="ollama:llama3.2"
 
 ---
 
-## 📝 Rules File (AGENTS.md)
+## 📝 Rules File (REVIEW.md)
 
-The AI needs to know your standards. Create an `AGENTS.md` file:
+The AI needs to know your standards. Create an `REVIEW.md` file:
 
 ```markdown
 # Code Review Rules
@@ -546,7 +546,7 @@ The AI needs to know your standards. Create an `AGENTS.md` file:
 - Use descriptive test names that explain the behavior
 ```
 
-> 💡 **Pro tip**: Your `AGENTS.md` can also serve as documentation for human reviewers!
+> 💡 **Pro tip**: Your `REVIEW.md` can also serve as documentation for human reviewers!
 
 ---
 
@@ -559,7 +559,7 @@ The AI needs to know your standards. Create an `AGENTS.md` file:
 PROVIDER="claude"
 FILE_PATTERNS="*.ts,*.tsx"
 EXCLUDE_PATTERNS="*.test.ts,*.test.tsx,*.spec.ts,*.d.ts,*.stories.tsx"
-RULES_FILE="AGENTS.md"
+RULES_FILE="REVIEW.md"
 ```
 
 ### Python Project
@@ -606,12 +606,12 @@ git commit -m "feat: add feature"
     │
     ├──▶ 2. Validate provider is installed
     │
-    ├──▶ 3. Check AGENTS.md exists
+    ├──▶ 3. Check REVIEW.md exists
     │
     ├──▶ 4. Get staged files matching FILE_PATTERNS
     │       (excluding EXCLUDE_PATTERNS)
     │
-    ├──▶ 5. Read coding rules from AGENTS.md
+    ├──▶ 5. Read coding rules from REVIEW.md
     │
     ├──▶ 6. Build prompt: rules + file contents
     │
@@ -903,11 +903,11 @@ The tool requires a rules file to know what to check:
 
 ```bash
 # Create your rules file
-touch AGENTS.md
+touch REVIEW.md
 
 # Add your coding standards
-echo "# My Coding Standards" > AGENTS.md
-echo "- No console.log in production" >> AGENTS.md
+echo "# My Coding Standards" > REVIEW.md
+echo "- No console.log in production" >> REVIEW.md
 ```
 
 ### "Ambiguous response" in Strict Mode
@@ -1008,7 +1008,7 @@ shellspec spec/unit/my_feature_spec.sh
 
 ### v2.1.0
 - ✅ Smart caching system - skip unchanged files
-- ✅ Auto-invalidation when AGENTS.md or .gga changes
+- ✅ Auto-invalidation when REVIEW.md or .gga changes
 - ✅ Cache commands: `status`, `clear`, `clear-all`
 - ✅ `--no-cache` flag to bypass caching
 

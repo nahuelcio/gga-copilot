@@ -36,7 +36,7 @@ NC='\033[0m' # No Color
 
 # Defaults
 DEFAULT_FILE_PATTERNS="*"
-DEFAULT_RULES_FILE="AGENTS.md"
+DEFAULT_RULES_FILE="REVIEW.md"
 DEFAULT_STRICT_MODE="true"
 
 # ============================================================================
@@ -83,7 +83,7 @@ print_help() {
   echo "                     Example: *.ts,*.tsx,*.js,*.jsx"
   echo "  EXCLUDE_PATTERNS   Patterns to exclude from review"
   echo "                     Example: *.test.ts,*.spec.ts,*.d.ts"
-  echo "  RULES_FILE         File containing review rules (default: AGENTS.md)"
+  echo "  RULES_FILE         File containing review rules (default: REVIEW.md)"
   echo "  STRICT_MODE        Fail on ambiguous AI response (default: true)"
   echo ""
   echo -e "${BOLD}EXAMPLES:${NC}"
@@ -252,8 +252,8 @@ FILE_PATTERNS="*.ts,*.tsx,*.js,*.jsx"
 EXCLUDE_PATTERNS="*.test.ts,*.spec.ts,*.test.tsx,*.spec.tsx,*.d.ts"
 
 # File containing code review rules
-# Default: AGENTS.md
-RULES_FILE="AGENTS.md"
+# Default: REVIEW.md
+RULES_FILE="REVIEW.md"
 
 # Strict mode: fail if AI response is ambiguous
 # Default: true

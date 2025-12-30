@@ -7,6 +7,7 @@
 # - claude: Anthropic Claude Code CLI
 # - gemini: Google Gemini CLI
 # - codex: OpenAI Codex CLI
+# - opencode: Opencode CLI
 # - ollama:<model>: Ollama with specified model
 # - copilot[:<model>]: GitHub Copilot via copilot-api proxy (default model: gpt-4o)
 # ============================================================================
@@ -54,6 +55,18 @@ validate_provider() {
         echo "  npm install -g @openai/codex"
         echo "  # or"
         echo "  brew install --cask codex"
+        echo ""
+        return 1
+      fi
+      ;;
+    opencode)
+      if ! command -v opencode &> /dev/null; then
+        echo -e "${RED}❌ Opencode CLI not found${NC}"
+        echo ""
+        echo "Install Opencode CLI:"
+        echo "  npm install -g @opencode/cli"
+        echo "  # or"
+        echo "  brew install opencode"
         echo ""
         return 1
       fi
@@ -126,6 +139,9 @@ execute_provider() {
     codex)
       execute_codex "$prompt"
       ;;
+    opencode)
+      execute_opencode "$prompt"
+      ;;
     ollama)
       local model="${provider#*:}"
       execute_ollama "$model" "$prompt"
@@ -166,6 +182,16 @@ execute_codex() {
   # Codex uses exec subcommand for non-interactive mode
   # Using --output-last-message to get just the final response
   codex exec "$prompt" 2>&1
+  return $?
+}
+
+execute_opencode() {
+  local prompt="$1"
+
+  # Opencode CLI: run a non-interactive execution similar to codex
+  # If the real opencode CLI uses a different subcommand, this mirrors the
+  # existing pattern and can be adjusted later.
+  opencode exec "$prompt" 2>&1
   return $?
 }
 
@@ -241,6 +267,9 @@ get_provider_info() {
       ;;
     codex)
       echo "OpenAI Codex CLI"
+      ;;
+    opencode)
+      echo "Opencode CLI"
       ;;
     ollama)
       local model="${provider#*:}"

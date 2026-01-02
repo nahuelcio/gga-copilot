@@ -90,6 +90,25 @@ validate_provider() {
         return 1
       fi
       ;;
+    factory)
+      # Factory provider uses a web API; require curl and an API key/token.
+      if ! command -v curl &> /dev/null; then
+        echo -e "${RED}❌ curl not found${NC}"
+        echo ""
+        echo "Install curl to use Factory provider."
+        echo ""
+        return 1
+      fi
+
+      if [[ -z "${FACTORY_API_KEY:-}" && -z "${FACTORY_TOKEN:-}" ]]; then
+        echo -e "${RED}❌ FACTORY_API_KEY or FACTORY_TOKEN not set${NC}"
+        echo ""
+        echo "Set FACTORY_API_KEY or FACTORY_TOKEN in your environment. See:"
+        echo "  https://docs.factory.ai"
+        echo ""
+        return 1
+      fi
+      ;;
     *)
       echo -e "${RED}❌ Unknown provider: $provider${NC}"
       echo ""
@@ -99,6 +118,7 @@ validate_provider() {
       echo "  - codex"
       echo "  - ollama:<model>"
       echo "  - copilot"
+      echo "  - factory"
       echo ""
       return 1
       ;;
@@ -136,6 +156,9 @@ execute_provider() {
         model="gpt-4o" # Default model
       fi
       execute_copilot "$model" "$prompt"
+      ;;
+    factory)
+      execute_factory "$prompt"
       ;;
   esac
 }
@@ -224,6 +247,53 @@ execute_copilot() {
   return 0
 }
 
+# Basic Factory.ai provider implementation
+# - Requires FACTORY_API_KEY or FACTORY_TOKEN to be set (validate_provider checks it)
+# - FACTORY_API_URL can be used to override the API endpoint (useful for self-hosted / staging)
+# - Response parsing is best-effort; Factory API formats may differ, but this provides a starting point.
+execute_factory() {
+  local prompt="$1"
+  local api_url="${FACTORY_API_URL:-https://api.factory.ai/v1/agents/execute}"
+  local api_key="${FACTORY_API_KEY:-$FACTORY_TOKEN}"
+
+  # Escape double quotes and backslashes for JSON payload
+  local escaped_prompt
+  escaped_prompt=$(echo "$prompt" | sed 's/\\/\\\\/g; s/"/\\"/g; s/$/\\n/g' | tr -d '\n')
+  escaped_prompt=${escaped_prompt%\\n}
+
+  local response
+  response=$(curl -s -X POST "$api_url" \
+    -H "Authorization: Bearer $api_key" \
+    -H "Content-Type: application/json" \
+    -d "{
+      \"input\": \"$escaped_prompt\"
+    }")
+
+  if [ $? -ne 0 ]; then
+    echo "Error connecting to Factory API. Is FACTORY_API_URL reachable?" >&2
+    return 1
+  fi
+
+  # Try to extract a "content" field if present, otherwise print raw response.
+  local content
+  content=$(echo "$response" | sed -n 's/.*"content": *"\([^"]*\)".*/\1/p' | sed 's/\\n/\n/g; s/\\\\/\\/g')
+  if [[ -n "$content" ]]; then
+    echo "$content"
+    return 0
+  fi
+
+  # Fallback: try to extract "text" field used by some APIs
+  content=$(echo "$response" | sed -n 's/.*"text": *"\([^"]*\)".*/\1/p' | sed 's/\\n/\n/g; s/\\\\/\\/g')
+  if [[ -n "$content" ]]; then
+    echo "$content"
+    return 0
+  fi
+
+  # No specific field found; return raw response
+  echo "$response"
+  return 0
+}
+
 # ============================================================================
 # Provider Info
 # ============================================================================
@@ -252,6 +322,10 @@ get_provider_info() {
         model="gpt-4o"
       fi
       echo "GitHub Copilot (model: $model)"
+      ;;
+    factory)
+      # Provide a short, friendly name for Factory provider
+      echo "Factory.ai (Droids)"
       ;;
     *)
       echo "Unknown provider"

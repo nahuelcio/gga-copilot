@@ -325,7 +325,7 @@ get_provider_info() {
       ;;
     factory)
       # Provide a short, friendly name for Factory provider
-      echo "Factory.ai (Droids)"
+      echo "Factory (Droids)"
       ;;
     *)
       echo "Unknown provider"

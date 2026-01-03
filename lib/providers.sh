@@ -22,6 +22,13 @@ LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [[ -f "$LIB_DIR/droid_factory.sh" ]]; then
   # shellcheck source=/dev/null
   source "$LIB_DIR/droid_factory.sh"
+else
+  # Also check a common installed location (e.g. ~/.local/share/gga/lib)
+  installed_helper="${XDG_DATA_HOME:-$HOME/.local/share}/gga/lib/droid_factory.sh"
+  if [[ -f "$installed_helper" ]]; then
+    # shellcheck source=/dev/null
+    source "$installed_helper"
+  fi
 fi
 
 # ============================================================================

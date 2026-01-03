@@ -8,6 +8,7 @@
 # - gemini: Google Gemini CLI
 # - codex: OpenAI Codex CLI
 # - ollama:<model>: Ollama with specified model
+# - droid: Droid Factory CLI
 # - copilot[:<model>]: GitHub Copilot via copilot-api proxy (default model: gpt-4o)
 # ============================================================================
 
@@ -81,6 +82,17 @@ validate_provider() {
         return 1
       fi
       ;;
+    droid)
+      # Droid Factory is a local CLI (droid). Ensure it's installed.
+      if ! command -v droid &> /dev/null; then
+        echo -e "${RED}❌ Droid CLI not found${NC}"
+        echo ""
+        echo "Install Droid Factory CLI or make it available in PATH:"
+        echo "  https://example.com/droid (replace with actual install instructions)"
+        echo ""
+        return 1
+      fi
+      ;;
     copilot)
       if ! command -v curl &> /dev/null; then
         echo -e "${RED}❌ curl not found${NC}"
@@ -98,6 +110,7 @@ validate_provider() {
       echo "  - gemini"
       echo "  - codex"
       echo "  - ollama:<model>"
+      echo "  - droid"
       echo "  - copilot"
       echo ""
       return 1
@@ -129,6 +142,9 @@ execute_provider() {
     ollama)
       local model="${provider#*:}"
       execute_ollama "$model" "$prompt"
+      ;;
+    droid)
+      execute_droid "$prompt"
       ;;
     copilot)
       local model="${provider#*:}"
@@ -176,6 +192,14 @@ execute_ollama() {
   # Ollama accepts prompt as argument after model name
   ollama run "$model" "$prompt" 2>&1
   return $?
+}
+
+execute_droid() {
+  local prompt="$1"
+
+  # Droid Factory CLI accepts prompt via stdin
+  echo "$prompt" | droid 2>&1
+  return "${PIPESTATUS[1]}"
 }
 
 execute_copilot() {
@@ -245,6 +269,9 @@ get_provider_info() {
     ollama)
       local model="${provider#*:}"
       echo "Ollama (model: $model)"
+      ;;
+    droid)
+      echo "Droid Factory CLI"
       ;;
     copilot)
       local model="${provider#*:}"

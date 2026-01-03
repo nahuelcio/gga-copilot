@@ -21,6 +21,11 @@ Describe 'providers.sh'
       The output should include "Codex"
     End
 
+    It 'returns info for droid'
+      When call get_provider_info "droid"
+      The output should include "Droid"
+    End
+
     It 'returns info for ollama with model name'
       When call get_provider_info "ollama:llama3.2"
       The output should include "Ollama"

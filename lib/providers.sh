@@ -91,12 +91,21 @@ validate_provider() {
       fi
       ;;
     droid)
-      # Droid Factory is a local CLI (droid). Ensure it's installed.
-      if ! command -v droid &> /dev/null; then
-        echo -e "${RED}❌ Droid CLI not found${NC}"
+      # Droid Factory can be provided either by a local `droid` CLI or by
+      # a helper function (droid_factory_run) exposed via lib/droid_factory.sh.
+      # If either is available we're good to go.
+      if command -v droid &> /dev/null || type droid_factory_run &> /dev/null; then
+        :
+      else
+        echo -e "${RED}❌ Droid CLI or droid factory helper not found${NC}"
         echo ""
-        echo "Install Droid Factory CLI or make it available in PATH:"
-        echo "  https://example.com/droid (replace with actual install instructions)"
+        echo "Provide a way to run the Droid Factory provider:"
+        echo "  1) Install a 'droid' CLI and ensure it is in PATH"
+        echo "     (example install: https://example.com/droid)"
+        echo ""
+        echo "  2) Or include the helper script in your installation so"
+        echo "     lib/droid_factory.sh is sourced by providers.sh (this"
+        echo "     exposes droid_factory_run which can wrap any runtime)"
         echo ""
         return 1
       fi
@@ -285,7 +294,7 @@ get_provider_info() {
       echo "Ollama (model: $model)"
       ;;
     droid)
-      echo "Droid Factory CLI"
+      echo "Droid Factory CLI (or helper: lib/droid_factory.sh)"
       ;;
     copilot)
       local model="${provider#*:}"

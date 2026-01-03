@@ -78,7 +78,7 @@ print_help() {
   echo ""
   echo -e "${BOLD}CONFIG OPTIONS:${NC}"
   echo "  PROVIDER           AI provider to use (required)"
-  echo "                     Values: claude, gemini, codex, ollama:<model>, droid, copilot[:<model>]"
+  echo "                     Values: claude, gemini, codex, ollama:<model>, droid (supports local helper), copilot[:<model>]"
   echo "  FILE_PATTERNS      File patterns to review (default: *)"
   echo "                     Example: *.ts,*.tsx,*.js,*.jsx"
   echo "  EXCLUDE_PATTERNS   Patterns to exclude from review"

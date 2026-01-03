@@ -116,4 +116,31 @@ Describe 'providers.sh'
       The output should eq "claude"
     End
   End
+
+  Describe 'droid factory helper'
+    setup() {
+      # No-op setup; tests will define helper functions as needed
+      :
+    }
+
+    It 'validate_provider succeeds when droid_factory_run helper exists'
+      # Define a mock helper to simulate presence of the droid factory
+      droid_factory_run() {
+        return 0
+      }
+      When call validate_provider "droid"
+      The status should be success
+    End
+
+    It 'execute_droid uses droid_factory_run helper and returns its exit code'
+      # Mock helper to emit identifiable output and return non-zero exit code
+      droid_factory_run() {
+        echo "DROID_HELPER_OUTPUT"
+        return 42
+      }
+      When call execute_droid "test prompt"
+      The output should include "DROID_HELPER_OUTPUT"
+      The status should eq 42
+    End
+  End
 End

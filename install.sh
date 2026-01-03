@@ -59,10 +59,11 @@ fi
 LIB_INSTALL_DIR="$HOME/.local/share/gga/lib"
 mkdir -p "$LIB_INSTALL_DIR"
 
-# Copy files
+# Copy files (include droid factory helper)
 cp "$SCRIPT_DIR/bin/gga" "$INSTALL_DIR/gga"
 cp "$SCRIPT_DIR/lib/providers.sh" "$LIB_INSTALL_DIR/providers.sh"
 cp "$SCRIPT_DIR/lib/cache.sh" "$LIB_INSTALL_DIR/cache.sh"
+cp "$SCRIPT_DIR/lib/droid_factory.sh" "$LIB_INSTALL_DIR/droid_factory.sh"
 
 # Update LIB_DIR path in installed script
 if [[ "$(uname)" == "Darwin" ]]; then
@@ -75,6 +76,8 @@ fi
 chmod +x "$INSTALL_DIR/gga"
 chmod +x "$LIB_INSTALL_DIR/providers.sh"
 chmod +x "$LIB_INSTALL_DIR/cache.sh"
+# droid factory helper may be sourced; make it executable for parity
+chmod +x "$LIB_INSTALL_DIR/droid_factory.sh"
 
 echo -e "${GREEN}✅ Installed gga to $INSTALL_DIR${NC}"
 echo ""

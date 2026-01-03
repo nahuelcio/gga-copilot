@@ -9,6 +9,13 @@
 # - Use printf to avoid adding extra newlines
 # - Preserve and return the exit status of the droid process reliably
 
+# If this file is sourced multiple times, avoid redefining the function.
+# When sourced as a script (not via `source`) the `return` would fail, so
+# tolerate that with a fallback to continue execution.
+if declare -f droid_factory_run > /dev/null; then
+  return 0 2>/dev/null || true
+fi
+
 droid_factory_run() {
   local prompt="$1"
 
@@ -27,9 +34,16 @@ droid_factory_run() {
     return 1
   fi
 
-  # Pass prompt via stdin to the droid CLI and forward output.
-  # Preserve exit code from the droid binary.
-  printf '%s' "$prompt" | "$droid_cmd" 2>&1
-  local status=${PIPESTATUS[1]:-1}
-  return $status
+  # Use a subshell with pipefail to reliably capture the exit status of the droid command.
+  # Capture output so we can forward it and return the correct exit code.
+  local output
+  if output=$( ( set -o pipefail; printf '%s' "$prompt" | "$droid_cmd" ) 2>&1 ); then
+    # Successful execution - print output to stdout and return 0
+    printf '%s\n' "$output"
+    return 0
+  else
+    # Failure - print output to stderr and return non-zero
+    printf '%s\n' "$output" >&2
+    return 1
+  fi
 }

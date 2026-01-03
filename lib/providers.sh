@@ -18,7 +18,8 @@ NC='\033[0m'
 
 # Optional: load droid factory helper if present alongside other libs.
 # When providers.sh is sourced in tests, BASH_SOURCE[0] will point to the lib path.
-LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Respect an externally provided LIB_DIR (e.g. by tests). Only compute it if unset.
+: "${LIB_DIR:=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
 if [[ -f "$LIB_DIR/droid_factory.sh" ]]; then
   # shellcheck source=/dev/null
   source "$LIB_DIR/droid_factory.sh"

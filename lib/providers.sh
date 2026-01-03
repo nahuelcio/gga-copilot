@@ -16,6 +16,14 @@
 RED='\033[0;31m'
 NC='\033[0m'
 
+# Optional: load droid factory helper if present alongside other libs.
+# When providers.sh is sourced in tests, BASH_SOURCE[0] will point to the lib path.
+LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "$LIB_DIR/droid_factory.sh" ]]; then
+  # shellcheck source=/dev/null
+  source "$LIB_DIR/droid_factory.sh"
+fi
+
 # ============================================================================
 # Provider Validation
 # ============================================================================
@@ -197,7 +205,13 @@ execute_ollama() {
 execute_droid() {
   local prompt="$1"
 
-  # Droid Factory CLI accepts prompt via stdin
+  # If a dedicated helper is available use it (allows test/timeouts/custom handling)
+  if type droid_factory_run &> /dev/null; then
+    droid_factory_run "$prompt"
+    return $?
+  fi
+
+  # Fallback: Droid Factory CLI accepts prompt via stdin
   echo "$prompt" | droid 2>&1
   return "${PIPESTATUS[1]}"
 }

@@ -109,6 +109,7 @@ validate_provider() {
       echo "  - claude"
       echo "  - gemini"
       echo "  - codex"
+      echo "  - opencode"
       echo "  - ollama:<model>"
       echo "  - copilot"
       echo ""

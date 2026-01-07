@@ -81,6 +81,23 @@ validate_provider() {
         return 1
       fi
       ;;
+    droid)
+      if ! command -v curl &> /dev/null; then
+        echo -e "${RED}❌ curl not found${NC}"
+        echo ""
+        echo "Install curl to use Droid provider."
+        echo ""
+        return 1
+      fi
+      if [[ -z "${FACTORY_API_KEY:-}" ]]; then
+        echo -e "${RED}❌ FACTORY_API_KEY not set${NC}"
+        echo ""
+        echo "Set FACTORY_API_KEY environment variable to authenticate with Factory (Droid) API."
+        echo "Example: export FACTORY_API_KEY=\"sk-...\""
+        echo ""
+        return 1
+      fi
+      ;;
     copilot)
       if ! command -v curl &> /dev/null; then
         echo -e "${RED}❌ curl not found${NC}"
@@ -130,6 +147,13 @@ execute_provider() {
       local model="${provider#*:}"
       execute_ollama "$model" "$prompt"
       ;;
+    droid)
+      local model="${provider#*:}"
+      if [[ "$model" == "$provider" || -z "$model" ]]; then
+        model="droid-latest"
+      fi
+      execute_droid "$model" "$prompt"
+      ;;
     copilot)
       local model="${provider#*:}"
       if [[ "$model" == "$provider" ]]; then
@@ -176,6 +200,50 @@ execute_ollama() {
   # Ollama accepts prompt as argument after model name
   ollama run "$model" "$prompt" 2>&1
   return $?
+}
+
+execute_droid() {
+  local model="$1"
+  local prompt="$2"
+
+  # Escape double quotes and backslashes in the prompt for JSON
+  local escaped_prompt
+  escaped_prompt=$(echo "$prompt" | sed 's/\\/\\\\/g; s/"/\\"/g; s/$/\\n/g' | tr -d '\n')
+  escaped_prompt=${escaped_prompt%\\n}
+
+  local endpoint="https://api.factory.ai/v1/chat/completions"
+  local api_key="${FACTORY_API_KEY:-}"
+
+  if [[ -z "$api_key" ]]; then
+    echo "Error: FACTORY_API_KEY not set" >&2
+    return 1
+  fi
+
+  local response
+  response=$(curl -s -X POST "$endpoint" \
+    -H "Authorization: Bearer $api_key" \
+    -H "Content-Type: application/json" \
+    -d "{
+      \"model\": \"$model\",
+      \"messages\": [{\"role\": \"user\", \"content\": \"$escaped_prompt\"}]
+    }")
+
+  if [ $? -ne 0 ]; then
+    echo "Error connecting to Factory API. Is the network available?" >&2
+    return 1
+  fi
+
+  # Extract content from JSON response using sed (zero dependency)
+  # Try to pull "content": "..." similar to other providers
+  local content
+  content=$(echo "$response" | \
+    sed 's/\\"/\x01/g' | \
+    sed -n 's/.*"content": *"\([^"]*\)".*/\1/p' | \
+    sed 's/\x01/\\"/g' | \
+    sed 's/\\n/\n/g; s/\\\\/\\/g')
+
+  echo "$content"
+  return 0
 }
 
 execute_copilot() {
@@ -245,6 +313,13 @@ get_provider_info() {
     ollama)
       local model="${provider#*:}"
       echo "Ollama (model: $model)"
+      ;;
+    droid)
+      local model="${provider#*:}"
+      if [[ "$model" == "$provider" || -z "$model" ]]; then
+        model="droid-latest"
+      fi
+      echo "Factory Droid (model: $model)"
       ;;
     copilot)
       local model="${provider#*:}"

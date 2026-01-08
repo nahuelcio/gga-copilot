@@ -81,6 +81,18 @@ validate_provider() {
         return 1
       fi
       ;;
+    opencode)
+      if ! command -v opencode &> /dev/null; then
+        echo -e "${RED}❌ Opencode CLI not found${NC}"
+        echo ""
+        echo "Install Opencode CLI:"
+        echo "  https://opencode.ai/cli"
+        echo "  # or"
+        echo "  brew install opencode"
+        echo ""
+        return 1
+      fi
+      ;;
     copilot)
       if ! command -v curl &> /dev/null; then
         echo -e "${RED}❌ curl not found${NC}"
@@ -97,6 +109,7 @@ validate_provider() {
       echo "  - claude"
       echo "  - gemini"
       echo "  - codex"
+      echo "  - opencode"
       echo "  - ollama:<model>"
       echo "  - copilot"
       echo ""
@@ -129,6 +142,9 @@ execute_provider() {
     ollama)
       local model="${provider#*:}"
       execute_ollama "$model" "$prompt"
+      ;;
+    opencode)
+      execute_opencode "$prompt"
       ;;
     copilot)
       local model="${provider#*:}"
@@ -176,6 +192,15 @@ execute_ollama() {
   # Ollama accepts prompt as argument after model name
   ollama run "$model" "$prompt" 2>&1
   return $?
+}
+
+execute_opencode() {
+  local prompt="$1"
+
+  # Opencode CLI is expected to accept prompt via stdin and output to stdout
+  # Mirror the approach used for other stdin-based CLIs
+  echo "$prompt" | opencode 2>&1
+  return "${PIPESTATUS[1]}"
 }
 
 execute_copilot() {
@@ -241,6 +266,9 @@ get_provider_info() {
       ;;
     codex)
       echo "OpenAI Codex CLI"
+      ;;
+    opencode)
+      echo "Opencode CLI"
       ;;
     ollama)
       local model="${provider#*:}"
